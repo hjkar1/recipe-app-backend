@@ -6,7 +6,10 @@ const utils = require('../utils/utils');
 
 // get all recipes
 recipeRouter.get('/', async (request, response) => {
-  const recipes = await Recipe.find({}).populate('author', { username: 1, _id: 1 });
+  const recipes = await Recipe.find({}).populate('author', {
+    username: 1,
+    _id: 1
+  });
   response.json(recipes);
 });
 
