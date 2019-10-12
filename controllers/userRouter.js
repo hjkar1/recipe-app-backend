@@ -8,19 +8,24 @@ const utils = require('../utils/utils');
 // create a new user
 userRouter.post('/', async (request, response) => {
   try {
-    const body = request.body;
-    const existingUserName = await User.find({ username: body.username });
+    const { username, password } = request.body;
+
+    if (username.length < 1) {
+      return response.status(400).json({ error: 'Missing username' });
+    }
+
+    const existingUserName = await User.find({ username });
 
     if (existingUserName.length > 0) {
       return response.status(400).json({ error: 'Username already exists' });
     }
-    if (body.password.length < 8) {
+    if (password.length < 8) {
       return response.status(400).json({ error: 'Too short password' });
     }
     const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(body.password, saltRounds);
+    const passwordHash = await bcrypt.hash(password, saltRounds);
     const user = new User({
-      username: body.username,
+      username,
       password: passwordHash
     });
     await user.save();
