@@ -58,7 +58,7 @@ const createTestRecipe = async () => {
   return testRecipe.toJSON();
 };
 
-// Creates a JSON web token for requests that require authentication.
+// Creates a valid JSON web token for requests that require authentication.
 const createTestToken = async () => {
   const testUserId = await createTestUser();
 
@@ -72,9 +72,22 @@ const createTestToken = async () => {
   return token;
 };
 
+// Creates an invalid JSON web token for requests that require authentication.
+// This token does not contain the required user data.
+const createInvalidTestToken = async () => {
+  const payload = {
+    test: 'test'
+  };
+
+  const token = jwt.sign(payload, process.env.SECRET);
+
+  return token;
+};
+
 module.exports = {
   createTestUser,
   createTestRecipes,
   createTestRecipe,
-  createTestToken
+  createTestToken,
+  createInvalidTestToken
 };
