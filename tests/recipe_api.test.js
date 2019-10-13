@@ -10,8 +10,8 @@ const utils = require('../utils/test-utils');
 const api = supertest(app);
 
 describe('recipe CRUD api', () => {
-  beforeAll(async () => {
-    // Clear the test database before testing.
+  beforeEach(async () => {
+    // Clear the test database before every test.
     await Recipe.deleteMany({});
     await User.deleteMany({});
   });
