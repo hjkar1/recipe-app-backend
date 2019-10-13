@@ -10,15 +10,10 @@ const utils = require('../utils/test-utils');
 const api = supertest(app);
 
 describe('recipe CRUD api', () => {
-  let testUser;
-
   beforeAll(async () => {
     // Clear the test database before testing.
     await Recipe.deleteMany({});
     await User.deleteMany({});
-
-    // Create test user to the database.
-    testUser = await utils.createTestUser();
   });
 
   test('all recipes are returned', async () => {
@@ -55,6 +50,27 @@ describe('recipe CRUD api', () => {
     expect(body.title).toEqual(testRecipe.title);
     expect(body.ingredients).toEqual(testRecipe.ingredients);
     expect(body.instructions).toEqual(testRecipe.instructions);
+  });
+
+  test('a new recipe is created', async () => {
+    // Create a JSON web token for the request.
+    const token = await utils.createTestToken();
+
+    const testRequest = {
+      title: 'New title',
+      ingredients: 'New ingredients',
+      instructions: 'New instructions'
+    };
+
+    const { body } = await api
+      .post('/api/recipes')
+      .set('Authorization', `bearer ${token}`)
+      .send(testRequest)
+      .expect('Content-Type', /application\/json/);
+
+    expect(body.title).toEqual(testRequest.title);
+    expect(body.ingredients).toEqual(testRequest.ingredients);
+    expect(body.instructions).toEqual(testRequest.instructions);
   });
 });
 
