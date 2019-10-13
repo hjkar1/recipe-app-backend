@@ -39,7 +39,7 @@ describe('recipe CRUD api', () => {
   });
 
   test('a recipe is returned', async () => {
-    // Create test recipes to the database.
+    // Create test recipe to the database.
     const testRecipe = await utils.createTestRecipe();
 
     const { body } = await api
@@ -50,6 +50,13 @@ describe('recipe CRUD api', () => {
     expect(body.title).toEqual(testRecipe.title);
     expect(body.ingredients).toEqual(testRecipe.ingredients);
     expect(body.instructions).toEqual(testRecipe.instructions);
+  });
+
+  test('returns 404 if recipe is not found', async () => {
+    // Create test recipes to the database.
+    await utils.createTestRecipes();
+
+    await api.get('/api/recipes/123456789012345678901234').expect(404);
   });
 
   test('a new recipe is created', async () => {
@@ -71,6 +78,36 @@ describe('recipe CRUD api', () => {
     expect(body.title).toEqual(testRequest.title);
     expect(body.ingredients).toEqual(testRequest.ingredients);
     expect(body.instructions).toEqual(testRequest.instructions);
+  });
+
+  test('a new recipe is not allowed without an authorization token', async () => {
+    const testRequest = {
+      title: 'New title',
+      ingredients: 'New ingredients',
+      instructions: 'New instructions'
+    };
+
+    await api
+      .post('/api/recipes')
+      .send(testRequest)
+      .expect(401);
+  });
+
+  test('a new recipe is not allowed with an invalid token', async () => {
+    const testRequest = {
+      title: 'New title',
+      ingredients: 'New ingredients',
+      instructions: 'New instructions'
+    };
+
+    // Create an invalid JSON web token for the request.
+    const token = await utils.createInvalidTestToken();
+
+    await api
+      .post('/api/recipes')
+      .set('Authorization', `bearer ${token}`)
+      .send(testRequest)
+      .expect(401);
   });
 });
 
