@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const Recipe = require('../models/recipe');
 const User = require('../models/user');
 
@@ -57,4 +58,23 @@ const createTestRecipe = async () => {
   return testRecipe.toJSON();
 };
 
-module.exports = { createTestUser, createTestRecipes, createTestRecipe };
+// Creates a JSON web token for requests that require authentication.
+const createTestToken = async () => {
+  const testUserId = await createTestUser();
+
+  const payload = {
+    username: 'testuser',
+    id: testUserId
+  };
+
+  const token = jwt.sign(payload, process.env.SECRET);
+
+  return token;
+};
+
+module.exports = {
+  createTestUser,
+  createTestRecipes,
+  createTestRecipe,
+  createTestToken
+};
