@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
-const bcrypt = require('bcrypt');
+const utils = require('../utils/test-utils');
 const app = require('../app');
 const User = require('../models/user');
 const Recipe = require('../models/recipe');
@@ -83,15 +83,7 @@ describe('login', () => {
     await User.deleteMany({});
 
     // Create a test user to the test database to test login.
-
-    const passwordHash = await bcrypt.hash('testpassword', 10);
-
-    const user = new User({
-      username: 'testuser',
-      password: passwordHash
-    });
-
-    await user.save();
+    await utils.createTestUser();
   });
 
   test('logs user in by returning a token', async () => {
