@@ -9,7 +9,7 @@ const utils = require('../utils/test-utils');
 
 const api = supertest(app);
 
-describe('recipe CRUD api', () => {
+describe('recipe CRUD API', () => {
   let testUserId;
   beforeAll(async () => {
     // Clear the test database before tests.
