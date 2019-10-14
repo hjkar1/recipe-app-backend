@@ -5,7 +5,7 @@ const User = require('../models/user');
 const Recipe = require('../models/recipe');
 const utils = require('../utils/utils');
 
-// create a new user
+// Create (sign up) a new user.
 userRouter.post('/', async (request, response) => {
   try {
     const { username, password } = request.body;
@@ -35,7 +35,7 @@ userRouter.post('/', async (request, response) => {
   }
 });
 
-// sign in a user
+// Sign in a user.
 userRouter.post('/login', async (request, response) => {
   const body = request.body;
 
@@ -61,7 +61,7 @@ userRouter.post('/login', async (request, response) => {
   response.status(200).send({ token, username: user.username });
 });
 
-// get ids of all recipes created by the user
+// Get ids of all recipes created by the user.
 userRouter.get('/recipes', async (request, response) => {
   try {
     const token = utils.getAuthToken(request);
