@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const Recipe = require('../models/recipe');
 const User = require('../models/user');
 
+/* Helper functions for integration testing. */
+
 // Save the test user to the database and return the user id.
 const createTestUser = async () => {
   const passwordHash = await bcrypt.hash('testpassword', 10);
@@ -12,59 +14,61 @@ const createTestUser = async () => {
     password: passwordHash
   });
 
-  await user.save();
-
-  const savedUser = await User.findOne({ username: user.username });
+  const savedUser = await user.save();
 
   return savedUser._id;
 };
 
 // Save test recipes to the database.
-const createTestRecipes = async () => {
-  const recipes = [
-    {
-      title: 'Test title 1',
-      ingredients: 'Test ingredients 1',
-      instructions: 'Test instructions 1'
-    },
-    {
-      title: 'Test title 2',
-      ingredients: 'Test ingredients 2',
-      instructions: 'Test instructions 2'
-    },
-    {
-      title: 'Test title 3',
-      ingredients: 'Test ingredients 3',
-      instructions: 'Test instructions 3'
-    }
-  ];
-
-  await Recipe.insertMany(recipes);
-
-  return recipes;
-};
-
-// Save a test recipe to the database.
-const createTestRecipe = async () => {
-  const recipe = new Recipe({
-    title: 'Test title',
-    ingredients: 'Test ingredients',
-    instructions: 'Test instructions'
+const createTestRecipes = async userId => {
+  const recipe1 = new Recipe({
+    title: 'Test title 1',
+    ingredients: 'Test ingredients 1',
+    instructions: 'Test instructions 1',
+    author: userId
   });
 
-  await recipe.save();
+  const recipe2 = new Recipe({
+    title: 'Test title 2',
+    ingredients: 'Test ingredients 2',
+    instructions: 'Test instructions 2',
+    author: userId
+  });
 
-  const testRecipe = await Recipe.findOne({ title: 'Test title' });
-  return testRecipe.toJSON();
+  const recipe3 = new Recipe({
+    title: 'Test title 3',
+    ingredients: 'Test ingredients 3',
+    instructions: 'Test instructions 3',
+    author: userId
+  });
+
+  const savedRecipe1 = await recipe1.save();
+  const savedRecipe2 = await recipe2.save();
+  const savedRecipe3 = await recipe3.save();
+
+  // Add the recipes to the user's recipe list.
+
+  const user = await User.findById(userId);
+  user.recipes = user.recipes.concat(
+    savedRecipe1._id,
+    savedRecipe2._id,
+    savedRecipe3._id
+  );
+  await user.save();
+};
+
+// Return all recipes in the database.
+const getRecipesFromDatabase = async () => {
+  const recipes = await Recipe.find({});
+
+  return recipes.map(recipe => recipe.toJSON());
 };
 
 // Creates a valid JSON web token for requests that require authentication.
-const createTestToken = async () => {
-  const testUserId = await createTestUser();
-
+const createTestToken = async userId => {
   const payload = {
     username: 'testuser',
-    id: testUserId
+    id: userId
   };
 
   const token = jwt.sign(payload, process.env.SECRET);
@@ -87,7 +91,7 @@ const createInvalidTestToken = async () => {
 module.exports = {
   createTestUser,
   createTestRecipes,
-  createTestRecipe,
+  getRecipesFromDatabase,
   createTestToken,
   createInvalidTestToken
 };
