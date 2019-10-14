@@ -4,7 +4,7 @@ const Recipe = require('../models/recipe');
 const User = require('../models/user');
 const utils = require('../utils/utils');
 
-// get all recipes
+// Get all the recipes.
 recipeRouter.get('/', async (request, response) => {
   const recipes = await Recipe.find({}).populate('author', {
     username: 1,
@@ -13,7 +13,7 @@ recipeRouter.get('/', async (request, response) => {
   response.json(recipes);
 });
 
-// get a recipe
+// Get a recipe.
 recipeRouter.get('/:id', async (request, response) => {
   try {
     const recipeId = request.params.id;
@@ -30,7 +30,7 @@ recipeRouter.get('/:id', async (request, response) => {
   }
 });
 
-// create a new recipe
+// Create a new recipe with the logged in user as the author.
 recipeRouter.post('/', async (request, response) => {
   try {
     const token = utils.getAuthToken(request);
@@ -67,7 +67,7 @@ recipeRouter.post('/', async (request, response) => {
   }
 });
 
-// update an existing recipe
+// Update an existing recipe.
 recipeRouter.put('/:id', async (request, response) => {
   try {
     const token = utils.getAuthToken(request);
@@ -92,7 +92,7 @@ recipeRouter.put('/:id', async (request, response) => {
       response.status(404).end();
     }
 
-    // the user is not the author of the recipe
+    // The user is not the author of the recipe.
     if (recipe.author.toString() !== userId) {
       return response.status(403).end();
     }
@@ -109,7 +109,7 @@ recipeRouter.put('/:id', async (request, response) => {
   }
 });
 
-// delete a recipe
+// Delete a recipe.
 recipeRouter.delete('/:id', async (request, response) => {
   try {
     const token = utils.getAuthToken(request);
@@ -131,7 +131,7 @@ recipeRouter.delete('/:id', async (request, response) => {
 
     const recipe = await Recipe.findById(recipeId);
 
-    // the user is not the author of the recipe
+    // The user is not the author of the recipe.
     if (recipe.author.toString() !== userId) {
       return response.status(403).end();
     }
