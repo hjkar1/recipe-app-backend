@@ -88,10 +88,30 @@ const createInvalidTestToken = async () => {
   return token;
 };
 
+// Create JSON web token for a user not authorized to update/delete the recipe.
+const createUnauthorizedUserToken = async () => {
+  const user = new User({
+    username: 'unauthorized',
+    password: 'unauthorized'
+  });
+
+  const unauthorizedUser = await user.save();
+
+  const payload = {
+    username: unauthorizedUser.username,
+    id: unauthorizedUser._id
+  };
+
+  const token = jwt.sign(payload, process.env.SECRET);
+
+  return token;
+};
+
 module.exports = {
   createTestUser,
   createTestRecipes,
   getRecipesFromDatabase,
   createTestToken,
-  createInvalidTestToken
+  createInvalidTestToken,
+  createUnauthorizedUserToken
 };
