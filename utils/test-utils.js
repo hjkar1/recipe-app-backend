@@ -64,7 +64,7 @@ const getRecipesFromDatabase = async () => {
   return recipes.map(recipe => recipe.toJSON());
 };
 
-// Creates a valid JSON web token for requests that require authentication.
+// Create a valid JSON web token for requests that require authentication.
 const createTestToken = async userId => {
   const payload = {
     username: 'testuser',
@@ -76,7 +76,7 @@ const createTestToken = async userId => {
   return token;
 };
 
-// Creates an invalid JSON web token for requests that require authentication.
+// Create an invalid JSON web token for requests that require authentication.
 // This token does not contain the required user data.
 const createInvalidTestToken = async () => {
   const payload = {
