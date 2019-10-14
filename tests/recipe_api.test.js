@@ -10,58 +10,51 @@ const utils = require('../utils/test-utils');
 const api = supertest(app);
 
 describe('recipe CRUD api', () => {
-  beforeEach(async () => {
-    // Clear the test database before every test.
+  let testUserId;
+  beforeAll(async () => {
+    // Clear the test database before tests.
     await Recipe.deleteMany({});
     await User.deleteMany({});
+
+    // Create a test user for requests that require authorization.
+    testUserId = await utils.createTestUser();
+
+    // Initialize the database with some test data.
+    await utils.createTestRecipes(testUserId);
   });
 
   test('all recipes are returned', async () => {
-    // Create test recipes to the database.
-    const recipes = await utils.createTestRecipes();
+    const savedRecipes = await utils.getRecipesFromDatabase();
 
     const { body } = await api
       .get('/api/recipes')
       .expect(200)
       .expect('Content-Type', /application\/json/);
 
-    expect(body.length).toBe(recipes.length);
-
-    const returnedRecipes = body.map(recipe => {
-      return {
-        title: recipe.title,
-        ingredients: recipe.ingredients,
-        instructions: recipe.instructions
-      };
-    });
-
-    expect(returnedRecipes).toEqual(recipes);
+    expect(body.length).toBe(savedRecipes.length);
   });
 
   test('a recipe is returned', async () => {
-    // Create test recipe to the database.
-    const testRecipe = await utils.createTestRecipe();
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipes[0];
 
     const { body } = await api
       .get(`/api/recipes/${testRecipe._id}`)
       .expect(200)
       .expect('Content-Type', /application\/json/);
 
-    expect(body.title).toEqual(testRecipe.title);
-    expect(body.ingredients).toEqual(testRecipe.ingredients);
-    expect(body.instructions).toEqual(testRecipe.instructions);
+    expect(testRecipe.title).toEqual(body.title);
   });
 
-  test('returns 404 if recipe is not found', async () => {
-    // Create test recipes to the database.
-    await utils.createTestRecipes();
-
+  test('return 404 if recipe is not found', async () => {
     await api.get('/api/recipes/123456789012345678901234').expect(404);
   });
 
-  test('a new recipe is created', async () => {
+  test('a new recipe is created and saved to the database', async () => {
     // Create a JSON web token for the request.
-    const token = await utils.createTestToken();
+    const token = await utils.createTestToken(testUserId);
 
     const testRequest = {
       title: 'New title',
@@ -69,18 +62,19 @@ describe('recipe CRUD api', () => {
       instructions: 'New instructions'
     };
 
-    const { body } = await api
+    await api
       .post('/api/recipes')
       .set('Authorization', `bearer ${token}`)
       .send(testRequest)
       .expect('Content-Type', /application\/json/);
 
-    expect(body.title).toEqual(testRequest.title);
-    expect(body.ingredients).toEqual(testRequest.ingredients);
-    expect(body.instructions).toEqual(testRequest.instructions);
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    const titles = savedRecipes.map(recipe => recipe.title);
+    expect(titles).toContain(testRequest.title);
   });
 
-  test('a new recipe is not allowed without an authorization token', async () => {
+  test('post request is not allowed without an authorization token', async () => {
     const testRequest = {
       title: 'New title',
       ingredients: 'New ingredients',
@@ -93,7 +87,7 @@ describe('recipe CRUD api', () => {
       .expect(401);
   });
 
-  test('a new recipe is not allowed with an invalid token', async () => {
+  test('post request is not allowed with an invalid token', async () => {
     const testRequest = {
       title: 'New title',
       ingredients: 'New ingredients',
@@ -108,6 +102,27 @@ describe('recipe CRUD api', () => {
       .set('Authorization', `bearer ${token}`)
       .send(testRequest)
       .expect(401);
+  });
+
+  test('a recipe is deleted from the database', async () => {
+    const savedRecipesBefore = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipesBefore[2];
+
+    // Create a JSON web token for the request.
+    const token = await utils.createTestToken(testUserId);
+
+    await api
+      .delete(`/api/recipes/${testRecipe._id}`)
+      .set('Authorization', `bearer ${token}`);
+
+    const savedRecipesAfter = await utils.getRecipesFromDatabase();
+
+    expect(savedRecipesAfter.length).toBe(savedRecipesBefore.length - 1);
+
+    const titles = savedRecipesAfter.map(recipe => recipe.title);
+    expect(titles).not.toContain(testRecipe.title);
   });
 });
 
