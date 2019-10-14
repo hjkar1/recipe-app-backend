@@ -89,7 +89,7 @@ recipeRouter.put('/:id', async (request, response) => {
     const recipe = await Recipe.findById(recipeId);
 
     if (!recipe) {
-      response.status(404).end();
+      return response.status(404).end();
     }
 
     // The user is not the author of the recipe.
@@ -130,6 +130,10 @@ recipeRouter.delete('/:id', async (request, response) => {
     const user = await User.findById(userId);
 
     const recipe = await Recipe.findById(recipeId);
+
+    if (!recipe) {
+      return response.status(404).end();
+    }
 
     // The user is not the author of the recipe.
     if (recipe.author.toString() !== userId) {
