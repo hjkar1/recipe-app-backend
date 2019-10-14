@@ -127,6 +127,49 @@ describe('login', () => {
   });
 });
 
+describe('recipes created by the user', () => {
+  beforeAll(async () => {
+    // Clear the test database before the test.
+    await User.deleteMany({});
+    await Recipe.deleteMany({});
+  });
+
+  test('returns all recipes created by the user', async () => {
+    // Create a test user.
+    const testUserId = await utils.createTestUser();
+
+    // Save some recipes in the database for the user.
+    await utils.createTestRecipes(testUserId);
+
+    // Create a JSON web token for the request.
+    const token = await utils.createTestToken(testUserId);
+
+    const { body } = await api
+      .get('/api/users/recipes')
+      .set('Authorization', `bearer ${token}`)
+      .expect('Content-Type', /application\/json/);
+
+    // Get the user's recipes from the database for comparison.
+    const testRecipes = await utils.getRecipesFromDatabase();
+
+    expect(body.length).toBe(testRecipes.length);
+  });
+
+  test('accessing /api/users/recipes is not allowed without authorization token', async () => {
+    await api.get('/api/users/recipes').expect(401);
+  });
+
+  test('accessing /api/users/recipes is not allowed with an invalid token', async () => {
+    // Create an invalid JSON web token for the request.
+    const token = await utils.createInvalidTestToken();
+
+    await api
+      .get('/api/users/recipes')
+      .set('Authorization', `bearer ${token}`)
+      .expect(401);
+  });
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });
