@@ -104,6 +104,112 @@ describe('recipe CRUD api', () => {
       .expect(401);
   });
 
+  test('a recipe is updated', async () => {
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipes[0];
+
+    const testRequest = {
+      title: 'Updated title',
+      ingredients: 'Updated ingredients',
+      instructions: 'Updated instructions'
+    };
+
+    // Create JSON web token for the request.
+    const token = await utils.createTestToken(testUserId);
+
+    await api
+      .put(`/api/recipes/${testRecipe._id}`)
+      .set('Authorization', `bearer ${token}`)
+      .send(testRequest)
+      .expect('Content-Type', /application\/json/);
+
+    const recipesAfterUpdate = await utils.getRecipesFromDatabase();
+
+    const titles = recipesAfterUpdate.map(recipe => recipe.title);
+    expect(titles).toContain(testRequest.title);
+  });
+
+  test('update is not allowed without an authorization token', async () => {
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipes[0];
+
+    const testRequest = {
+      title: 'Updated title',
+      ingredients: 'Updated ingredients',
+      instructions: 'Updated instructions'
+    };
+
+    await api
+      .put(`/api/recipes/${testRecipe._id}`)
+      .send(testRequest)
+      .expect(401);
+  });
+
+  test('update is not allowed with an invalid token', async () => {
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipes[0];
+
+    const testRequest = {
+      title: 'Updated title',
+      ingredients: 'Updated ingredients',
+      instructions: 'Updated instructions'
+    };
+
+    // Create an invalid JSON web token for the request.
+    const token = await utils.createInvalidTestToken();
+
+    await api
+      .put(`/api/recipes/${testRecipe._id}`)
+      .set('Authorization', `bearer ${token}`)
+      .send(testRequest)
+      .expect(401);
+  });
+
+  test('update is not allowed for users other than the author', async () => {
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipes[0];
+
+    const testRequest = {
+      title: 'Updated title',
+      ingredients: 'Updated ingredients',
+      instructions: 'Updated instructions'
+    };
+
+    // Create a JSON web token with a wrong user for the request.
+    const token = await utils.createUnauthorizedUserToken();
+
+    await api
+      .put(`/api/recipes/${testRecipe._id}`)
+      .set('Authorization', `bearer ${token}`)
+      .send(testRequest)
+      .expect(403);
+  });
+
+  test('return 404 when trying to update a recipe that does not exist', async () => {
+    const testRequest = {
+      title: 'Updated title',
+      ingredients: 'Updated ingredients',
+      instructions: 'Updated instructions'
+    };
+
+    // Create a JSON web token for the request.
+    const token = await utils.createTestToken(testUserId);
+
+    await api
+      .put('/api/recipes/123456789012345678901234')
+      .set('Authorization', `bearer ${token}`)
+      .send(testRequest)
+      .expect(404);
+  });
+
   test('a recipe is deleted from the database', async () => {
     const savedRecipesBefore = await utils.getRecipesFromDatabase();
 
@@ -123,6 +229,55 @@ describe('recipe CRUD api', () => {
 
     const titles = savedRecipesAfter.map(recipe => recipe.title);
     expect(titles).not.toContain(testRecipe.title);
+  });
+
+  test('delete request is not allowed without an authorization token', async () => {
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipes[0];
+
+    await api.delete(`/api/recipes/${testRecipe._id}`).expect(401);
+  });
+
+  test('delete request is not allowed with an invalid token', async () => {
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipes[0];
+
+    // Create an invalid JSON web token for the request.
+    const token = await utils.createInvalidTestToken();
+
+    await api
+      .delete(`/api/recipes/${testRecipe._id}`)
+      .set('Authorization', `bearer ${token}`)
+      .expect(401);
+  });
+
+  test('delete request is not allowed for users other than the author', async () => {
+    const savedRecipes = await utils.getRecipesFromDatabase();
+
+    // Use a recipe from the database in the test.
+    const testRecipe = savedRecipes[0];
+
+    // Create a JSON web token with a wrong user for the request.
+    const token = await utils.createUnauthorizedUserToken();
+
+    await api
+      .delete(`/api/recipes/${testRecipe._id}`)
+      .set('Authorization', `bearer ${token}`)
+      .expect(403);
+  });
+
+  test('return 404 when trying to delete a recipe that does not exist', async () => {
+    // Create a JSON web token for the request.
+    const token = await utils.createTestToken(testUserId);
+
+    await api
+      .delete('/api/recipes/123456789012345678901234')
+      .set('Authorization', `bearer ${token}`)
+      .expect(404);
   });
 });
 
