@@ -6,6 +6,7 @@ const cors = require('cors');
 const userRouter = require('./controllers/userRouter');
 const recipeRouter = require('./controllers/recipeRouter');
 const mongoose = require('mongoose');
+const morgan = require('morgan');
 
 mongoose
   .connect(config.MONGODB_URI, {
@@ -21,6 +22,11 @@ mongoose
 
 app.use(cors());
 app.use(bodyParser.json());
+
+// Disable logging in the test environment.
+if (app.get('env') !== 'test') {
+  app.use(morgan('tiny'));
+}
 
 app.use('/api/recipes', recipeRouter);
 app.use('/api/users', userRouter);
