@@ -4,6 +4,9 @@
 # production
 /build
 
+# development
+/requests
+save-demo-content.js
+
 # misc
 .env
-save-demo-content.js
