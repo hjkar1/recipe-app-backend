@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const app = require('../app');
 const Recipe = require('../models/recipe');
 const User = require('../models/user');
-const utils = require('../utils/test-utils');
+const utils = require('./test-utils');
 
 /* Integration tests for recipe API */
 
