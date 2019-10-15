@@ -19,42 +19,25 @@ const createTestUser = async () => {
   return savedUser._id;
 };
 
-// Save test recipes to the database.
-const createTestRecipes = async userId => {
-  const recipe1 = new Recipe({
-    title: 'Test title 1',
-    ingredients: 'Test ingredients 1',
-    instructions: 'Test instructions 1',
-    author: userId
-  });
+// Save a defined amount of test recipes to the database.
+// If the amount is not defined, 3 recipes will be created.
+const createTestRecipes = async (userId, numberOfTestRecipes = 3) => {
+  for (let i = 0; i < numberOfTestRecipes; i++) {
+    const recipe = new Recipe({
+      title: 'Test title ' + i,
+      ingredients: 'Test ingredients ' + i,
+      instructions: 'Test instructions ' + i,
+      author: userId
+    });
 
-  const recipe2 = new Recipe({
-    title: 'Test title 2',
-    ingredients: 'Test ingredients 2',
-    instructions: 'Test instructions 2',
-    author: userId
-  });
+    const savedRecipe = await recipe.save();
 
-  const recipe3 = new Recipe({
-    title: 'Test title 3',
-    ingredients: 'Test ingredients 3',
-    instructions: 'Test instructions 3',
-    author: userId
-  });
+    // Add the recipe to the user's recipe list.
 
-  const savedRecipe1 = await recipe1.save();
-  const savedRecipe2 = await recipe2.save();
-  const savedRecipe3 = await recipe3.save();
-
-  // Add the recipes to the user's recipe list.
-
-  const user = await User.findById(userId);
-  user.recipes = user.recipes.concat(
-    savedRecipe1._id,
-    savedRecipe2._id,
-    savedRecipe3._id
-  );
-  await user.save();
+    const user = await User.findById(userId);
+    user.recipes = user.recipes.concat(savedRecipe._id);
+    await user.save();
+  }
 };
 
 // Return all recipes in the database.
