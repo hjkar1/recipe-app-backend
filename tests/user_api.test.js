@@ -11,7 +11,7 @@ const api = supertest(app);
 
 describe('signup', () => {
   beforeEach(async () => {
-    // Clear the test database before every signup test.
+    // Clear all users from the test database before every signup test.
     await User.deleteMany({});
   });
 
@@ -79,7 +79,7 @@ describe('signup', () => {
 
 describe('login', () => {
   beforeAll(async () => {
-    // Clear the test database before testing login.
+    // Clear all users from the test database before testing login.
     await User.deleteMany({});
 
     // Create a test user to the test database to test login.
