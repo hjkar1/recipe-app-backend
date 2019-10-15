@@ -11,13 +11,18 @@ const api = supertest(app);
 
 describe('recipe CRUD API', () => {
   let testUserId;
+
   beforeAll(async () => {
-    // Clear the test database before tests.
-    await Recipe.deleteMany({});
+    // Clear all users from the test database before tests.
     await User.deleteMany({});
 
     // Create a test user for requests that require authorization.
     testUserId = await utils.createTestUser();
+  });
+
+  beforeEach(async () => {
+    // Clear all the recipes from the test database.
+    await Recipe.deleteMany({});
 
     // Initialize the database with some test data.
     await utils.createTestRecipes(testUserId);
@@ -214,7 +219,7 @@ describe('recipe CRUD API', () => {
     const savedRecipesBefore = await utils.getRecipesFromDatabase();
 
     // Use a recipe from the database in the test.
-    const testRecipe = savedRecipesBefore[2];
+    const testRecipe = savedRecipesBefore[0];
 
     // Create a JSON web token for the request.
     const token = await utils.createTestToken(testUserId);
