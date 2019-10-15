@@ -5,16 +5,20 @@ const User = require('../models/user');
 const utils = require('../utils/utils');
 
 // Get all the recipes.
-recipeRouter.get('/', async (request, response) => {
-  const recipes = await Recipe.find({}).populate('author', {
-    username: 1,
-    _id: 1
-  });
-  response.json(recipes);
+recipeRouter.get('/', async (request, response, next) => {
+  try {
+    const recipes = await Recipe.find({}).populate('author', {
+      username: 1,
+      _id: 1
+    });
+    response.json(recipes);
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Get a recipe.
-recipeRouter.get('/:id', async (request, response) => {
+recipeRouter.get('/:id', async (request, response, next) => {
   try {
     const recipeId = request.params.id;
     const recipe = await Recipe.findById(recipeId).populate('author', {
@@ -26,12 +30,12 @@ recipeRouter.get('/:id', async (request, response) => {
       response.status(404).end();
     }
   } catch (error) {
-    response.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
 // Create a new recipe with the logged in user as the author.
-recipeRouter.post('/', async (request, response) => {
+recipeRouter.post('/', async (request, response, next) => {
   try {
     const token = utils.getAuthToken(request);
 
@@ -63,12 +67,12 @@ recipeRouter.post('/', async (request, response) => {
 
     response.json(savedRecipe);
   } catch (error) {
-    response.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
 // Update an existing recipe.
-recipeRouter.put('/:id', async (request, response) => {
+recipeRouter.put('/:id', async (request, response, next) => {
   try {
     const token = utils.getAuthToken(request);
 
@@ -105,12 +109,12 @@ recipeRouter.put('/:id', async (request, response) => {
 
     response.json(savedRecipe);
   } catch (error) {
-    response.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
 // Delete a recipe.
-recipeRouter.delete('/:id', async (request, response) => {
+recipeRouter.delete('/:id', async (request, response, next) => {
   try {
     const token = utils.getAuthToken(request);
 
@@ -147,7 +151,7 @@ recipeRouter.delete('/:id', async (request, response) => {
 
     response.json(recipeId);
   } catch (error) {
-    response.status(400).json({ error: error.message });
+    next(error);
   }
 });
 

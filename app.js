@@ -7,6 +7,7 @@ const userRouter = require('./controllers/userRouter');
 const recipeRouter = require('./controllers/recipeRouter');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const errorHandler = require('./utils/errorHandler');
 
 mongoose
   .connect(config.MONGODB_URI, {
@@ -30,5 +31,7 @@ if (app.get('env') !== 'test') {
 
 app.use('/api/recipes', recipeRouter);
 app.use('/api/users', userRouter);
+
+app.use(errorHandler);
 
 module.exports = app;

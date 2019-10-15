@@ -6,7 +6,7 @@ const Recipe = require('../models/recipe');
 const utils = require('../utils/utils');
 
 // Create (sign up) a new user.
-userRouter.post('/', async (request, response) => {
+userRouter.post('/', async (request, response, next) => {
   try {
     const { username, password } = request.body;
 
@@ -31,38 +31,42 @@ userRouter.post('/', async (request, response) => {
     await user.save();
     response.status(201).end();
   } catch (error) {
-    response.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
 // Sign in a user.
-userRouter.post('/login', async (request, response) => {
-  const body = request.body;
+userRouter.post('/login', async (request, response, next) => {
+  try {
+    const body = request.body;
 
-  const user = await User.findOne({ username: body.username });
+    const user = await User.findOne({ username: body.username });
 
-  if (!user) {
-    return response.status(401).json({ error: 'Wrong username or password' });
+    if (!user) {
+      return response.status(401).json({ error: 'Wrong username or password' });
+    }
+
+    const passwordOK = await bcrypt.compare(body.password, user.password);
+
+    if (!passwordOK) {
+      return response.status(401).json({ error: 'Wrong username or password' });
+    }
+
+    const payload = {
+      username: user.username,
+      id: user._id
+    };
+
+    const token = jwt.sign(payload, process.env.SECRET);
+
+    response.status(200).send({ token, username: user.username });
+  } catch (error) {
+    next(error);
   }
-
-  const passwordOK = await bcrypt.compare(body.password, user.password);
-
-  if (!passwordOK) {
-    return response.status(401).json({ error: 'Wrong username or password' });
-  }
-
-  const payload = {
-    username: user.username,
-    id: user._id
-  };
-
-  const token = jwt.sign(payload, process.env.SECRET);
-
-  response.status(200).send({ token, username: user.username });
 });
 
 // Get ids of all recipes created by the user.
-userRouter.get('/recipes', async (request, response) => {
+userRouter.get('/recipes', async (request, response, next) => {
   try {
     const token = utils.getAuthToken(request);
 
@@ -81,7 +85,7 @@ userRouter.get('/recipes', async (request, response) => {
 
     response.json(recipes.map(recipe => recipe._id));
   } catch (error) {
-    response.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
