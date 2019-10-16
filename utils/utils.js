@@ -1,4 +1,4 @@
-// get the web token from the header
+// Get the web token from the header.
 module.exports.getAuthToken = request => {
   let token = null;
   const authHeader = request.get('Authorization');
