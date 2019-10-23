@@ -11,7 +11,11 @@ recipeRouter.get('/', async (request, response, next) => {
       username: 1,
       _id: 1
     });
-    response.json(recipes);
+
+    // Remove version keys and reformat ids.
+    const formattedResponse = recipes.map(recipe => utils.formatRecipe(recipe));
+
+    response.json(formattedResponse);
   } catch (error) {
     next(error);
   }
@@ -25,7 +29,10 @@ recipeRouter.get('/:id', async (request, response, next) => {
       username: 1
     });
     if (recipe) {
-      response.json(recipe);
+      // Remove version key and reformat id.
+      const formattedResponse = utils.formatRecipe(recipe);
+
+      response.json(formattedResponse);
     } else {
       response.status(404).end();
     }
@@ -65,7 +72,10 @@ recipeRouter.post('/', async (request, response, next) => {
     user.recipes = user.recipes.concat(savedRecipe._id);
     await user.save();
 
-    response.json(savedRecipe);
+    // Remove version key and reformat id.
+    const formattedResponse = utils.formatRecipe(savedRecipe);
+
+    response.json(formattedResponse);
   } catch (error) {
     next(error);
   }
@@ -107,7 +117,10 @@ recipeRouter.put('/:id', async (request, response, next) => {
 
     const savedRecipe = await recipe.save();
 
-    response.json(savedRecipe);
+    // Remove version key and reformat id.
+    const formattedResponse = utils.formatRecipe(savedRecipe);
+
+    response.json(formattedResponse);
   } catch (error) {
     next(error);
   }

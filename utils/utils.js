@@ -7,3 +7,21 @@ module.exports.getAuthToken = request => {
   }
   return token;
 };
+
+// Remove the version key field and underscore from id field in the recipe.
+module.exports.formatRecipe = recipe => {
+  const formattedAuthor = {
+    id: recipe.author._id.toString(),
+    username: recipe.author.username
+  };
+
+  const formattedRecipe = {
+    id: recipe._id.toString(),
+    title: recipe.title,
+    ingredients: recipe.ingredients,
+    instructions: recipe.instructions,
+    author: formattedAuthor
+  };
+
+  return formattedRecipe;
+};
