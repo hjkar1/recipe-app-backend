@@ -1,5 +1,5 @@
 # recipe-app-backend
-A simple CRUD Node/Express/MongoDb REST API server for recipes. Can be used as backend for [this client](https://github.com/hjkar1/recipe-app-frontend).
+A simple CRUD Node/Express/MongoDb REST API server for recipes. Backend for [this client](https://github.com/hjkar1/recipe-app-frontend).
 
 ## Prerequisites
 You need to have npm and Node.js installed to run this app on your computer.
@@ -43,21 +43,3 @@ Use `npm run lint` to run ESLint.
 All tests are API integration tests. They use the database configured for test environment. Initializing the tests will clear the database.
 
 Use `npm test` to run the tests.
-
-
-## Deploying to Heroku
-A Heroku account is required to deploy this app to Heroku.
-
-Deploying with [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli):
-
-1. Run `heroku create` in the project root folder to create a new Heroku remote.
-
-2. Use `npm run deploy` to deploy the app.
-
-3. Set the environment variables needed in production (production database URI and secret for JWTs):
-```
-heroku config:set MONGODB_URI=your-database-URI
-heroku config:set SECRET=your-secret
-```
-
-Steps 1 and 3 are needed only on the first deploy. After the app is deployed to Heroku you can deploy a new version by using `npm run deploy`.
